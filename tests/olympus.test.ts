@@ -4,6 +4,7 @@ import {
   OlympusServiceError,
   describeError,
   fetchConsoles,
+  fetchConstellation,
   fetchHealth,
   liveConsoles,
   plannedConsoles,
@@ -107,6 +108,32 @@ describe("fetchHealth", () => {
   it("rejects a report with no results array", async () => {
     stubFetch(() => Response.json({ checkedAt: "now" }));
     await expect(fetchHealth()).rejects.toThrow(/malformed health report/);
+  });
+});
+
+describe("fetchConstellation", () => {
+  it("calls the service's /constellation", async () => {
+    const spy = stubFetch(() => Response.json({ version: 1 }));
+    await fetchConstellation();
+    expect(String(spy.mock.calls[0][0])).toBe(
+      "http://olympus-service.olympus.svc.cluster.local/constellation",
+    );
+  });
+
+  it("relays the manifest", async () => {
+    stubFetch(() => Response.json({ version: 1, services: [{ id: "hermes", status: "live" }] }));
+    const m = await fetchConstellation();
+    expect(m.services?.[0].id).toBe("hermes");
+  });
+
+  it("rejects a manifest that is not an object, rather than rendering an empty board", async () => {
+    stubFetch(() => Response.json([1, 2, 3]));
+    await expect(fetchConstellation()).rejects.toThrow(/malformed constellation/);
+  });
+
+  it("throws when the service errors instead of inventing a manifest", async () => {
+    stubFetch(() => new Response("nope", { status: 500 }));
+    await expect(fetchConstellation()).rejects.toBeInstanceOf(OlympusServiceError);
   });
 });
 

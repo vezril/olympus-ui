@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const NAV = [
-  { href: "#consoles", label: "Consoles" },
-  { href: "#planned", label: "Planned" },
+  { href: "/", label: "Consoles" },
+  { href: "/board", label: "Constellation" },
 ];
 
 /**

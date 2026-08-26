@@ -8,7 +8,7 @@
  */
 import "server-only";
 
-import type { ConsoleEntry, HealthReport } from "@/lib/types";
+import type { ConsoleEntry, Constellation, HealthReport } from "@/lib/types";
 
 const DEFAULT_SERVICE_URL = "http://olympus-service.olympus.svc.cluster.local";
 const DEFAULT_TIMEOUT_MS = 4000;
@@ -81,6 +81,18 @@ export async function fetchHealth(): Promise<HealthReport> {
     throw new OlympusServiceError("olympus-service returned a malformed health report");
   }
   return report;
+}
+
+/**
+ * The constellation manifest. olympus-service relays codex's YAML as JSON, so
+ * nothing here parses YAML.
+ */
+export async function fetchConstellation(): Promise<Constellation> {
+  const manifest = await get<Constellation>("/constellation");
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new OlympusServiceError("olympus-service returned a malformed constellation manifest");
+  }
+  return manifest;
 }
 
 export function liveConsoles(consoles: ConsoleEntry[]): ConsoleEntry[] {
