@@ -2,8 +2,8 @@ apiVersion: v2
 name: olympus-ui
 description: Olympus — the constellation's front door. Every console, one login.
 type: application
-version: 0.1.2
-appVersion: "0.1.2"
+version: 0.1.3
+appVersion: "0.1.3"
 home: https://github.com/vezril/olympus-ui
 sources:
   - https://github.com/vezril/olympus-ui
