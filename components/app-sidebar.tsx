@@ -2,6 +2,7 @@
 
 import { summarize, useHealth } from "@/components/health-context";
 import { HealthPill } from "@/components/health-pill";
+import { OlympusMark } from "@/components/olympus-mark";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -34,26 +35,7 @@ export function AppSidebar() {
   return (
     <aside className="bg-[var(--sidebar)] border-border flex w-full shrink-0 items-center justify-between gap-3 border-b px-4 py-3 md:h-dvh md:w-60 md:flex-col md:items-stretch md:justify-start md:gap-6 md:border-r md:border-b-0 md:p-4">
       <div className="flex items-center gap-3">
-        {/* Mark slot — the olympus mark does not exist yet (README). Neutral
-            cyan linework stands in; swap it for the keyed PNG when it lands. */}
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 40 40"
-          fill="none"
-          aria-hidden
-          focusable="false"
-          className="shrink-0"
-        >
-          <path
-            d="M4 30 L14 14 L20 22 L26 10 L36 30 Z"
-            stroke="var(--sidebar-primary)"
-            strokeWidth="1.25"
-            strokeLinejoin="round"
-            opacity="0.85"
-          />
-          <circle cx="26" cy="10" r="1.75" fill="var(--sidebar-primary)" />
-        </svg>
+        <OlympusMark size={32} className="shrink-0 text-[var(--sidebar-primary)]" />
         <div className="leading-tight">
           <p className="text-sm font-medium tracking-wide">Olympus</p>
           <p className="text-muted-foreground text-xs">the front door</p>

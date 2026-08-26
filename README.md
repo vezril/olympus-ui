@@ -14,10 +14,9 @@ conventions every sibling UI follows.
 - **Accent**: Olympus is not a god — it's the mountain the whole family lives on. Use **family
   cyan `oklch(0.85 0.2 195)` as `--primary`** (the one surface where the family identity IS the
   signature). Don't invent a new accent; the tiles carry each service's accent via its mark.
-- **Mark**: no `olympus` mark exists yet in the brand set — it needs generating (the
-  brand-prompts doc in dionysus-planner is the prompt catalog; suggest a motif like the
-  twelve-seat mountain summit / temple pediment in cyan linework). Until then, no logo beats a
-  wrong logo.
+- **Mark**: *(done 2026-08-25)* the mark is a temple pediment forming a terraced mountain
+  summit, in family cyan neon linework — see "The mark" below. It breaks the portrait
+  convention every god mark follows, because Olympus has no face: there is no god of Olympus.
 - **Tiles**: each console tile shows its god mark (codex `docs/brand/<god>.png` — keyed to the
   #06060F ground, composite them only on background), name, and a text+color health pill
   (never color-only, per §5).
@@ -120,12 +119,33 @@ Releases are tags on `main` (`vX.Y.Z`). `release.yml` refuses a tag that is not 
 ancestor of main, refuses a version already on Docker Hub, and skips the publish
 with a warning when `DOCKERHUB_*` secrets are absent.
 
+## The mark
+
+A classical temple whose pediment *is* the mountain's peak, over a terraced
+summit, in family cyan (`#00F4F6`) neon linework. Every god mark in the set is a
+portrait; Olympus is the mountain the family lives on, not one of its gods, so it
+has no face to draw and no second accent — here the family identity is the
+signature.
+
+- [`components/olympus-mark.tsx`](components/olympus-mark.tsx) — the canonical
+  geometry, inlined so its stroke is `currentColor`. The caller paints it from
+  `--sidebar-primary`, which makes the "accent in the mark == `--primary`" echo
+  (UX-STANDARDS §3.4) true **by construction** rather than by remembering to
+  re-export a PNG whenever the accent moves.
+- [`app/icon.svg`](app/icon.svg) — the favicon, keyed to the `#06060F` ground
+  like the rest of the brand set.
+- [`public/brand/olympus.svg`](public/brand/olympus.svg) — transparent twin, for
+  anything that references the mark by URL and composites it itself.
+
+It is vector where the god marks are AI-generated raster art. That is a real
+difference in kind: if you would rather have a raster mark in the exact house
+style, the catalog prompt for it is written and drops into
+`dionysus-planner/docs/brand-prompts.md`.
+
 ## Not done yet
 
-- **The olympus mark does not exist.** The sidebar shows neutral cyan linework
-  and the tiles show an accent-tinted slot — deliberately not logos. When the
-  marks land, copy them to `public/brand/<god>.png` and set `mark` on the
-  console entry the service serves.
-- **No favicon**, for the same reason: it should be the olympus mark.
+- **The god marks still do not exist here.** Tiles show an accent-tinted slot,
+  deliberately not logos. When the marks land, copy them to
+  `public/brand/<god>.png` and set `mark` on the console entry the service serves.
 - Auth is not here and should not be — Authelia sits at the Traefik edge and
   Olympus sits behind it like every other console.
