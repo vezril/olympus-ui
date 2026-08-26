@@ -1,13 +1,16 @@
 import Image from "next/image";
 
+import { markFor } from "@/lib/marks";
 import type { ConsoleEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
- * The mark slot. The real god marks are keyed to the #06060F ground and live in
- * codex `docs/brand/<god>.png`; drop them into public/brand/ and set `mark` on
- * the registry entry. Until then this renders a neutral accent-linework slot —
- * deliberately not a logo, because no logo beats a wrong logo.
+ * The console's god mark. Marks ship on transparent alpha (brand convention,
+ * 2026-08-26), so they composite on the card surface without the #06060F square
+ * a ground-baked mark would show.
+ *
+ * A console with no shipped mark falls back to neutral accent linework — a slot,
+ * deliberately not a logo. No logo beats a wrong logo.
  */
 export function Mark({
   entry,
@@ -18,10 +21,12 @@ export function Mark({
   size?: number;
   className?: string;
 }) {
-  if (entry.mark) {
+  const src = entry.mark ?? markFor(entry.id);
+
+  if (src) {
     return (
       <Image
-        src={entry.mark}
+        src={src}
         alt=""
         aria-hidden
         width={size}

@@ -136,11 +136,34 @@ Source of truth is codex `docs/brand/olympus.{jpeg,png}`; the copy here is keyed
 from that JPEG. If the mark is regenerated, re-key and re-copy rather than
 editing this one.
 
+## The console marks
+
+Each tile carries its god mark from the brand set, keyed to **transparent alpha**
+so it composites on the card surface without the `#06060F` square a ground-baked
+mark would show.
+
+The mark is a **UI asset, not registry data** — olympus-service has no business
+knowing this app's public paths — so the path is derived from the console id in
+[`lib/marks.ts`](lib/marks.ts) rather than served. That module's set is the guard:
+a console with no mark falls back to neutral accent linework instead of
+requesting a 404 and rendering a broken image. A test ties the set to the files
+actually on disk, so the two cannot drift.
+
+Adding a mark: key it from codex `docs/brand/<god>.jpeg` with that repo's
+`key_transparent.py`, drop the PNG in `public/brand/`, add the id to the set.
+
+Shipped at 256px — tiles render at 40px, and codex holds the 1024px masters if a
+larger render is ever needed.
+
+**dionysus is the exception**: it has no checkerboard source anywhere, only a PNG
+already baked onto a flat `#1A1427` ground (a different ground from every other
+mark). It was un-baked against that flat colour rather than checker-keyed. If a
+proper source ever turns up, re-key it the normal way.
+
 ## Not done yet
 
-- **The per-console god marks are not wired up here yet.** Tiles show an
-  accent-tinted slot, deliberately not logos. The marks exist in codex
-  `docs/brand/` — key them transparent, copy to `public/brand/<god>.png`, and set
-  `mark` on the console entry olympus-service serves.
+- **Two consoles in the brand set have no console here yet** (athena, hephaestus,
+  argus and the rest of the pantheon). When one becomes a console, key its mark
+  and add its id to [`lib/marks.ts`](lib/marks.ts).
 - Auth is not here and should not be — Authelia sits at the Traefik edge and
   Olympus sits behind it like every other console.
