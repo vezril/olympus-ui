@@ -1,0 +1,44 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: olympus-ui
+  namespace: olympus
+spec:
+  interval: 10m
+  url: https://github.com/vezril/olympus-ui
+  ref:
+    # Pin to a release tag, never a branch. The pin records what is DEPLOYED.
+    tag: v0.1.0
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: olympus-ui
+  namespace: olympus
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: deploy/charts/olympus-ui
+      sourceRef:
+        kind: GitRepository
+        name: olympus-ui
+        namespace: olympus
+  values:
+    image:
+      repository: calvinference/olympusui
+      tag: "0.1.0"
+
+    ingress:
+      enabled: true
+      # Load-bearing empty string — see values.yaml. Traefik answers on NodePort 61642.
+      className: ""
+      hosts:
+        - host: olympus.home.experimentalneutron.com
+          paths:
+            - path: /
+              pathType: Prefix
+
+    health:
+      timeoutMs: 3000
+      urls: {}

@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches: [development]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: lint · types · tests · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: eslint
+        run: npm run lint
+
+      - name: tsc
+        run: npm run typecheck
+
+      - name: vitest
+        run: npm test
+
+      - name: next build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_OLYMPUS_API_BASE: /api/olympus
+
+  chart:
+    name: helm lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+
+      - run: helm lint deploy/charts/olympus-ui
+
+      - name: ingress omits ingressClassName when className is empty
+        # Regression guard: an empty-string ingressClassName is RFC-1123-invalid
+        # and k8s rejects the whole object. This bit artemis-ui twice.
+        run: |
+          set -euo pipefail
+          rendered=$(helm template olympus deploy/charts/olympus-ui --set ingress.enabled=true)
+          if grep -q "ingressClassName" <<<"$rendered"; then
+            echo "FATAL: ingressClassName rendered despite an empty className" >&2
+            exit 1
+          fi
+          echo "ok: field omitted"
+
+      - name: ingress emits ingressClassName when one is set
+        run: |
+          set -euo pipefail
+          helm template olympus deploy/charts/olympus-ui \
+            --set ingress.enabled=true --set ingress.className=traefik \
+            | grep -q "ingressClassName: traefik"
+          echo "ok: field present"
+
+  image:
+    name: docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Build only — no push on CI. The in-Dockerfile assertion that
+      # NEXT_PUBLIC_OLYMPUS_API_BASE reached the browser bundle runs here.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: olympusui:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

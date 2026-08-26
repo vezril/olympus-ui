@@ -1,0 +1,19 @@
+Olympus is deployed as {{ include "olympus-ui.fullname" . }}.
+
+Image:   {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+Service: {{ include "olympus-ui.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+{{- if .Values.ingress.enabled }}
+
+Reachable at:
+{{- range .Values.ingress.hosts }}
+  http://{{ .host }}   (via the Traefik NodePort :61642 — never test on port 80,
+                        the QNAP host's nginx answers 200 to any Host and lies)
+{{- end }}
+{{- else }}
+
+No ingress. Check it with:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "olympus-ui.fullname" . }} 8080:{{ .Values.service.port }}
+{{- end }}
+
+Health fan-out: GET /api/olympus/health (server-side; the browser never leaves this origin).

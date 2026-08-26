@@ -1,0 +1,72 @@
+replicaCount: 1
+
+image:
+  # NOTE: the Docker Hub account is `calvinference`, NOT the GitHub org.
+  repository: calvinference/olympusui
+  pullPolicy: IfNotPresent
+  # defaults to .Chart.AppVersion when empty
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  # Safe defaults: nothing is exposed until someone opts in.
+  enabled: false
+  # Load-bearing empty string: no IngressClass resource exists on this cluster and
+  # k3s's Traefik v2.4 ignores named classes. The template OMITS the field entirely
+  # when this is empty — an empty-string ingressClassName is RFC-1123-invalid and
+  # k8s rejects the whole object.
+  className: ""
+  annotations: {}
+  hosts:
+    - host: olympus.home.experimentalneutron.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # No cert-manager on this cluster — leave both empty unless one exists.
+  clusterIssuer: ""
+  tlsSecretName: ""
+
+# Server-side health fan-out. These are RUNTIME env: safe to set from chart values.
+# Never put NEXT_PUBLIC_* here — it is inlined at image build time and ignored here.
+health:
+  timeoutMs: 3000
+  # Per-console override of the probe target. Omit a console to use the default,
+  # GET / on http://<service>.<namespace>.svc.cluster.local/
+  urls: {}
+  #  dionysus: http://dionysus-planner.dionysus.svc.cluster.local/api/dionysus/health
+  #  hermes:   http://hermes-ui.hermes.svc.cluster.local/api/hermes/health
+
+# Any additional runtime env, as name/value pairs.
+extraEnv: []
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 96Mi
+  limits:
+    memory: 256Mi
+
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
