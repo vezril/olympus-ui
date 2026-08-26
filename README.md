@@ -105,10 +105,12 @@ docker run --rm -p 3000:3000 olympusui:local
 
 ## Chart and deploy
 
-The chart ships in this repo at [`deploy/charts/olympus-ui`](deploy/charts/olympus-ui);
-[`deploy/flux/`](deploy/flux) holds reference manifests mirroring the codex
-`apps/olympus/` shape. There is **no Flux** on this cluster — deploys are a manual
-`helm upgrade -f <mirrored-values>` from the tagged chart, never a bare `--set`.
+The chart ships in this repo at [`deploy/charts/olympus-ui`](deploy/charts/olympus-ui).
+The authoritative record of what is deployed is codex `apps/olympus/` — there are
+deliberately no Flux manifests here, because a second copy of the deploy values that
+nothing keeps honest is how they drift. There is **no Flux** on this cluster —
+deploys are a manual `helm upgrade -f <mirrored-values>` from the tagged chart,
+never a bare `--set`.
 
 `ingress.className: ""` is load-bearing: the template omits `ingressClassName`
 entirely when it is empty, because an empty string is RFC-1123-invalid and k8s
