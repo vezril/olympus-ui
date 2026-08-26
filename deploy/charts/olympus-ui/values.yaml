@@ -34,15 +34,13 @@ ingress:
   clusterIssuer: ""
   tlsSecretName: ""
 
-# Server-side health fan-out. These are RUNTIME env: safe to set from chart values.
-# Never put NEXT_PUBLIC_* here — it is inlined at image build time and ignored here.
-health:
-  timeoutMs: 3000
-  # Per-console override of the probe target. Omit a console to use the default,
-  # GET / on http://<service>.<namespace>.svc.cluster.local/
-  urls: {}
-  #  dionysus: http://dionysus-planner.dionysus.svc.cluster.local/api/dionysus/health
-  #  hermes:   http://hermes-ui.hermes.svc.cluster.local/api/hermes/health
+# olympus-service owns the registry and the health fan-out; this app's BFF is a
+# proxy to it. RUNTIME env, safe to set from chart values. Never put NEXT_PUBLIC_*
+# here — it is inlined at image build time and ignored at runtime.
+olympusService:
+  url: http://olympus-service.olympus.svc.cluster.local
+  # How long the BFF waits on the service before giving up and saying so.
+  timeoutMs: 4000
 
 # Any additional runtime env, as name/value pairs.
 extraEnv: []

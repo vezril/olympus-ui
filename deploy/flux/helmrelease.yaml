@@ -39,6 +39,6 @@ spec:
             - path: /
               pathType: Prefix
 
-    health:
-      timeoutMs: 3000
-      urls: {}
+    olympusService:
+      url: http://olympus-service.olympus.svc.cluster.local
+      timeoutMs: 4000

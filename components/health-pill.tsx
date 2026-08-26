@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { HealthState } from "@/lib/health";
+import type { HealthState } from "@/lib/types";
 
-export type PillState = HealthState | "degraded" | "checking";
+export type PillState = HealthState | "degraded" | "unknown" | "checking";
 
 const COPY: Record<
   PillState,
@@ -12,6 +12,7 @@ const COPY: Record<
   degraded: { label: "Degraded", variant: "warning" },
   down: { label: "Down", variant: "destructive" },
   planned: { label: "Planned", variant: "outline" },
+  unknown: { label: "Unknown", variant: "outline" },
   checking: { label: "Checking…", variant: "default" },
 };
 
@@ -41,6 +42,7 @@ export function HealthPill({
           state === "degraded" && "bg-current",
           state === "down" && "border border-current",
           state === "planned" && "border border-current",
+          state === "unknown" && "border border-current",
           state === "checking" && "bg-current animate-pulse",
         )}
       />

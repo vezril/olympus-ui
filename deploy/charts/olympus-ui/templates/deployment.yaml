@@ -39,12 +39,10 @@ spec:
               value: {{ .Values.service.targetPort | quote }}
             - name: HOSTNAME
               value: "0.0.0.0"
-            - name: OLYMPUS_HEALTH_TIMEOUT_MS
-              value: {{ .Values.health.timeoutMs | quote }}
-            {{- range $id, $url := .Values.health.urls }}
-            - name: OLYMPUS_HEALTH_URL_{{ $id | upper }}
-              value: {{ $url | quote }}
-            {{- end }}
+            - name: OLYMPUS_SERVICE_URL
+              value: {{ .Values.olympusService.url | quote }}
+            - name: OLYMPUS_SERVICE_TIMEOUT_MS
+              value: {{ .Values.olympusService.timeoutMs | quote }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

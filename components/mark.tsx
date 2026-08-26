@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import type { ConsoleEntry } from "@/lib/registry";
+import type { ConsoleEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**

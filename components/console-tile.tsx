@@ -4,7 +4,7 @@ import { HealthPill, type PillState } from "@/components/health-pill";
 import { Mark } from "@/components/mark";
 import { Card } from "@/components/ui/card";
 import { useHealth } from "@/components/health-context";
-import type { ConsoleEntry } from "@/lib/registry";
+import type { ConsoleEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 function detailFor(

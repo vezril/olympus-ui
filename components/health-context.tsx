@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { HEALTH_ENDPOINT } from "@/lib/api";
-import type { HealthReport, HealthResult } from "@/lib/health";
+import type { HealthReport, HealthResult } from "@/lib/types";
 
 const REFRESH_MS = 30_000;
 
@@ -37,7 +37,14 @@ export function HealthProvider({ children }: { children: React.ReactNode }) {
     setSyncing(true);
     try {
       const res = await fetch(HEALTH_ENDPOINT, { cache: "no-store" });
-      if (!res.ok) throw new Error(`health check failed (HTTP ${res.status})`);
+      if (!res.ok) {
+        // The BFF answers 502 with {error} when olympus-service is the problem;
+        // relaying its words beats "HTTP 502".
+        const body = await res.json().catch(() => null);
+        const detail =
+          body && typeof body.error === "string" ? body.error : `HTTP ${res.status}`;
+        throw new Error(detail);
+      }
       const report: HealthReport = await res.json();
       setById(Object.fromEntries(report.results.map((r) => [r.id, r])));
       setCheckedAt(report.checkedAt);

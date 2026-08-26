@@ -21,8 +21,9 @@ conventions every sibling UI follows.
 - **Tiles**: each console tile shows its god mark (codex `docs/brand/<god>.png` — keyed to the
   #06060F ground, composite them only on background), name, and a text+color health pill
   (never color-only, per §5).
-- **Health**: poll server-side in the BFF (`/api/olympus/health` fan-out) — the browser talks
-  same-origin only, like every sibling UI.
+- **Health**: the browser talks same-origin only, like every sibling UI. *(Superseded
+  2026-08-25: the fan-out itself moved to olympus-service; this app's
+  `/api/olympus/health` is now a proxy to it. See "It needs olympus-service" below.)*
 
 ---
 
@@ -33,20 +34,46 @@ shadcn-style primitives with cva/clsx/tailwind-merge · Geist Sans/Mono · vites
 
 Pinned to Next `15.5.24` — the patched backport line. `15.5.4` carries CVE-2025-66478.
 
+## It needs olympus-service
+
+The console registry and the health fan-out live in
+[olympus-service](https://github.com/vezril/olympus-service). This app is the
+portal: it renders what the service reports and does no probing of its own.
+
+```
+browser ──► olympus-ui BFF ──► olympus-service ──► each console's Service
+         (same origin only)   (owns registry +
+                               health fan-out)
+```
+
+The browser still only ever calls this app's own `/api/olympus/health`. What
+changed is what sits behind that route: a proxy to the service rather than a
+local fan-out. No CORS, no console exposed to the browser, unchanged.
+
+If the service is unreachable, the portal says so with the real reason and shows
+no console list — it has none to show. It does not fall back to a stale or
+hardcoded list, because a portal that invents its own contents is worse than one
+that admits it is blind.
+
 ## Run it locally
+
+Start olympus-service first (it defaults to `:8080`):
+
+```bash
+cd ../olympus-service && sbt run
+```
+
+Then, with `OLYMPUS_SERVICE_URL=http://127.0.0.1:8080` in `.env.local`
+(gitignored; see `.env.example`):
 
 ```bash
 npm install
 npm run dev
 ```
 
-Health probes target in-cluster DNS, so off-cluster every console reports **Down**
-(with the reason — `timed out`, `HTTP 404`). To exercise the Live path, point a
-console somewhere reachable in `.env.local` (gitignored; see `.env.example`):
-
-```bash
-OLYMPUS_HEALTH_URL_HERMES=http://127.0.0.1:3000/
-```
+Off-cluster the service will report every console **Down** — it is probing
+in-cluster DNS. To exercise the Live path, give the service an override registry
+pointing somewhere reachable; see olympus-service's README.
 
 The green gate, all of which CI also runs:
 
@@ -54,32 +81,13 @@ The green gate, all of which CI also runs:
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-## How health works
-
-The browser only ever calls this app's own `/api/olympus/health`. That route
-fans out **server-side** to each console's in-cluster Service and returns one
-report. No CORS, no console exposed to the browser, no environment-specific URL
-in the bundle.
-
-- Default probe: `GET /` on `http://<service>.<namespace>.svc.cluster.local/` —
-  the same thing the k8s readiness probe uses, so 200–399 passes.
-- Override per console with `OLYMPUS_HEALTH_URL_<ID>` when a console grows a
-  real health endpoint. Runtime env, set from chart values.
-- `planned` consoles (hera, poseidon, ares) are never probed — they are named,
-  not built, and the tile says so rather than showing a permanent red pill.
-- Failures are data: one dead console never fails the report. The tile shows the
-  reason, and the sidebar aggregates to Live / **Degraded** / Down.
-
-Consoles live in [`lib/registry.ts`](lib/registry.ts) — static config, mirroring
-codex `apps/`. That module is the seam to replace if Olympus ever reads live from k8s.
-
 ## Configuration
 
 | Variable | When | Default |
 |---|---|---|
 | `NEXT_PUBLIC_OLYMPUS_API_BASE` | **build** (Dockerfile builder ARG) | `/api/olympus` |
-| `OLYMPUS_HEALTH_URL_<ID>` | runtime | in-cluster Service root |
-| `OLYMPUS_HEALTH_TIMEOUT_MS` | runtime | `3000` |
+| `OLYMPUS_SERVICE_URL` | runtime | `http://olympus-service.olympus.svc.cluster.local` |
+| `OLYMPUS_SERVICE_TIMEOUT_MS` | runtime | `4000` |
 
 `NEXT_PUBLIC_*` is inlined at build time — setting it from the chart is inert
 (zeus-ui shipped that bug). The Docker build **asserts** the value reached the
@@ -117,7 +125,7 @@ with a warning when `DOCKERHUB_*` secrets are absent.
 - **The olympus mark does not exist.** The sidebar shows neutral cyan linework
   and the tiles show an accent-tinted slot — deliberately not logos. When the
   marks land, copy them to `public/brand/<god>.png` and set `mark` on the
-  registry entry; drop the placeholder assertion in `tests/registry.test.ts`.
+  console entry the service serves.
 - **No favicon**, for the same reason: it should be the olympus mark.
 - Auth is not here and should not be — Authelia sits at the Traefik edge and
   Olympus sits behind it like every other console.

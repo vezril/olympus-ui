@@ -4,7 +4,7 @@ import { ConsoleTile } from "@/components/console-tile";
 import { useHealth } from "@/components/health-context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { ConsoleEntry } from "@/lib/registry";
+import type { ConsoleEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 function Section({

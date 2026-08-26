@@ -20,7 +20,7 @@ const NAV = [
  * dropped there rather than shrunk: the page is short enough to scroll.
  */
 export function AppSidebar() {
-  const { byId, checkedAt, loading, syncing, refresh } = useHealth();
+  const { byId, checkedAt, error, loading, syncing, refresh } = useHealth();
   const { up, total, state } = summarize(byId);
 
   const lastChecked = checkedAt
@@ -80,14 +80,22 @@ export function AppSidebar() {
           <Skeleton className="h-5 w-24" />
         ) : (
           <HealthPill
-            state={state === "unknown" ? "planned" : state}
-            detail={`${up} of ${total} consoles answering`}
+            // With no report there is nothing to aggregate — say Unknown rather
+            // than borrowing "Planned", which would read as "nothing is built".
+            state={error || state === "unknown" ? "unknown" : state}
+            detail={
+              error ? `olympus-service: ${error}` : `${up} of ${total} consoles answering`
+            }
             className="w-fit"
           />
         )}
 
         <p className="text-muted-foreground hidden font-mono text-xs sm:block">
-          {loading ? "checking…" : `${up}/${total} up${lastChecked ? ` · ${lastChecked}` : ""}`}
+          {loading
+            ? "checking…"
+            : error
+              ? "no report"
+              : `${up}/${total} up${lastChecked ? ` · ${lastChecked}` : ""}`}
         </p>
 
         <Button
