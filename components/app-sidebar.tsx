@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
+
 import { summarize, useHealth } from "@/components/health-context";
 import { HealthPill } from "@/components/health-pill";
-import { OlympusMark } from "@/components/olympus-mark";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -35,7 +36,19 @@ export function AppSidebar() {
   return (
     <aside className="bg-[var(--sidebar)] border-border flex w-full shrink-0 items-center justify-between gap-3 border-b px-4 py-3 md:h-dvh md:w-60 md:flex-col md:items-stretch md:justify-start md:gap-6 md:border-r md:border-b-0 md:p-4">
       <div className="flex items-center gap-3">
-        <OlympusMark size={32} className="shrink-0 text-[var(--sidebar-primary)]" />
+        {/* The keyed god mark, per UX-STANDARDS §3.4 / §5. Marks ship on
+            transparent alpha (brand convention, 2026-08-26), so this composites
+            on the sidebar surface without the #06060F square a baked-on mark
+            would show here. */}
+        <Image
+          src="/brand/olympus.png"
+          alt=""
+          aria-hidden
+          width={32}
+          height={32}
+          priority
+          className="shrink-0"
+        />
         <div className="leading-tight">
           <p className="text-sm font-medium tracking-wide">Olympus</p>
           <p className="text-muted-foreground text-xs">the front door</p>
