@@ -3,18 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { hasMark, markFor } from "@/lib/marks";
-
-const CONSOLES = [
-  "dionysus",
-  "hermes",
-  "apollo",
-  "artemis",
-  "demeter",
-  "hera",
-  "poseidon",
-  "ares",
-];
+import { SHIPPED_MARKS, hasMark, markFor } from "@/lib/marks";
 
 describe("markFor", () => {
   it("returns a public path for a shipped mark", () => {
@@ -30,7 +19,7 @@ describe("markFor", () => {
 describe("the shipped set matches what is actually on disk", () => {
   // The whole point of the set is to stop a 404 rendering as a broken image.
   // If it drifts from public/brand/, that guarantee is gone.
-  it.each(CONSOLES)("%s has a file backing its entry", (id) => {
+  it.each([...SHIPPED_MARKS])("%s has a file backing its entry", (id) => {
     expect(hasMark(id)).toBe(true);
     const path = join(process.cwd(), "public", "brand", `${id}.png`);
     expect(existsSync(path), `${path} is missing`).toBe(true);
