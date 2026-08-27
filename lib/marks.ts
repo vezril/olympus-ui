@@ -10,16 +10,25 @@
  * Adding a mark: key it transparent from codex `docs/brand/<god>.jpeg` with
  * that repo's key_transparent.py, drop the PNG in public/brand/, add the id here.
  */
-const SHIPPED = new Set([
-  "dionysus",
-  "hermes",
+export const SHIPPED_MARKS = [
+  // consoles
   "apollo",
+  "ares",
   "artemis",
   "demeter",
+  "dionysus",
+  "hephaestus",
   "hera",
+  "hermes",
   "poseidon",
-  "ares",
-]);
+  // board-only: in codex's manifest, no console tile of their own (yet)
+  "argus",
+  "ariadne",
+  "harpocrates",
+  "iris",
+] as const;
+
+const SHIPPED: ReadonlySet<string> = new Set(SHIPPED_MARKS);
 
 export function markFor(id: string): string | undefined {
   return SHIPPED.has(id) ? `/brand/${id}.png` : undefined;
